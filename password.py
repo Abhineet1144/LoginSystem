@@ -87,6 +87,7 @@ try:
 
 except:
     if not fe:
+        #making the user to register since the file is just being created
         f = open('users.dat', 'wb')
         print("Welcome to registration\n")
         un = input("Enter your user name: ")
@@ -103,6 +104,9 @@ except:
         pickle.dump(d, f)
         print("Registration successful!")
 
+    #if no username exist as specified in login, this statement is executed
     else:
         print('Username not found')
+
+#file is closed
 f.close()
