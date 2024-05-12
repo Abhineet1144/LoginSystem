@@ -4,6 +4,7 @@ import json
 
 class Main:
     def __init__(self):
+        self.islogin = False
         try:
             f = open('users.json', 'r')
         except FileNotFoundError:
@@ -26,7 +27,6 @@ class Main:
         self.user_name = input("Enter your user name: ").lower()
         
         user_detail = self.user_data()
-
         if self.user_name in user_detail:
             print("Username already exists")
             self.user_name = input("Enter your user name: ").lower()
@@ -49,27 +49,41 @@ class Main:
 
     def login(self):
         user_detail = self.user_data()
-        user_name = input("Enter your user name: ").lower()
-        while user_name not in user_detail:
+        self.user_name = input("Enter your user name: ").lower()
+        while self.user_name not in user_detail:
             print("Username does not exist")
-            user_name = input("Enter your user name: ").lower()
-        hashed_password = user_detail[user_name]["password"].encode()
+            self.user_name = input("Enter your user name: ").lower()
+        hashed_password = user_detail[self.user_name]["password"].encode()
         
         password = pwinput.pwinput(prompt="Enter your password: ", mask="*")
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
-            print("Login successful")
+            self.islogin = True
+            return "Login successful"
         else:
-            print("Incorrect password")
-
+            return "Incorrect password"
+    
+    def delete(self):
+        user_detail = self.user_data()
+        if self.islogin == False:
+            login_confirmation = self.login()
+            if login_confirmation == "Login successful":
+                print(self.user_name)
+                del user_detail[self.user_name]
+                f2 = open('users.json', 'w')
+                json.dump(user_detail, f2, indent=3)
+        
 obj = Main()
 choice = input("Do you want to login or register: ").lower()
 
-while choice not in ['register', 'login']:
+while choice not in ['register', 'login', 'delete']:
     print("Invalid input\n")
-    choice = input("Do you want to login or register: ")
+    choice = input("Do you want to login or register or delete: ")
 
 if choice == 'register':
     obj.register()
 
 if choice == 'login':
-    obj.login()
+    print(obj.login())
+
+if choice == 'delete':
+    obj.delete()
