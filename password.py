@@ -1,112 +1,76 @@
-import pickle
-import getpass
+import pwinput
+import bcrypt
+import json
 
-p = ''
-pc = None
-c = 0
-fe = False
-li = False
+class Main:
+    def __init__(self):
+        try:
+            f = open('users.json', 'r')
+        except FileNotFoundError:
+            f = open("users.json", "w")
+            data = {}
+            json.dump(data, f, indent=3)
 
-#checking if the file exist or not using try
-try:
-    f = open('users.dat', 'rb')
+    def hash_password(self, password):
+        salt = bcrypt.gensalt()
+        return bcrypt.hashpw(password.encode('utf-8'), salt)
+    
+    def user_data(self):
+        f1 = open('users.json', 'r')
+        self.data = json.load(f1)
+        user_detail = {k:v for k,v in self.data.items()}
+        return user_detail
 
-    #creating variables
-    fe = True
-    c = 0
+    def register(self):
+        print("\nWelcome to registration\n")
+        self.user_name = input("Enter your user name: ").lower()
+        
+        user_detail = self.user_data()
 
-    #asking if the user wants to login or register
-    mde = input("Do you want to login or register: ")
-    while mde.lower() not in ['login', 'register']:
-        c += 1
-        if c > 0:
-            print("Invalid input\n")
-        mde = input("Do you want to login or register: ")
+        if self.user_name in user_detail:
+            print("Username already exists")
+            self.user_name = input("Enter your user name: ").lower()
 
-    if mde.lower() == 'login':
-        #asking the user for their username
-        un = input("Enter username: ")
-        p = ''
+        self.password = pwinput.pwinput(prompt="Enter your password: ", mask="*")
+        conform_password = pwinput.pwinput(prompt="Confirm your password: ", mask="*")
+        while conform_password != self.password:
+            print("Password do not match")
+            conform_password = pwinput.pwinput(prompt="Confirm your password: ", mask="*")
+            print('\n')
+        
+        hashed_password = self.hash_password(self.password)
+        
+        fdata = {self.user_name: {"password": hashed_password.decode()}}
+        self.data.update(fdata)
+        
+        f2 = open('users.json', 'r+')
+        json.dump(self.data, f2, indent=3)
+        print("Registration successful!")
 
-
-        #checking if the username exist
-        while True:
-            d = pickle.load(f)
-            for i in d.keys():
-                if i == un:
-                    print(j)
-                    p = str(j)
-                    li = True
-                    
-            if li:
-                break
-
-        #asking the username for password and verifying if it is correct
-        up = getpass.getpass("Enter password(The pass might not be visible but is getting recorded): ")
-        if p == up:
-            print("Logged in successfully")
-            print("Welcom back", un)
-
+    def login(self):
+        user_detail = self.user_data()
+        user_name = input("Enter your user name: ").lower()
+        print(user_detail[user_name]["password"])
+        while user_name not in user_detail:
+            print("Username does not exist")
+            user_name = input("Enter your user name: ").lower()
+        hashed_password = user_detail[user_name]["password"].encode()
+        
+        password = pwinput.pwinput(prompt="Enter your password: ", mask="*")
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+            print("Login successful")
         else:
             print("Incorrect password")
 
-    else:
-        print("Welcome to registration")
+obj = Main()
+choice = input("Do you want to login or register: ").lower()
 
-        #asking the user for username
-        un = input("Enter username: ")
+while choice not in ['register', 'login']:
+    print("Invalid input\n")
+    choice = input("Do you want to login or register: ")
 
-        #appending all the existing usernames into a list
-        uns = []
-        try:
-            while True:
-                d = pickle.load(f)
-                for i in d.keys():
-                    uns.append(i)
+if choice == 'register':
+    obj.register()
 
-        except:           
-            f.close()
-            
-        #checking if there is another user with same username
-        while un in uns:
-            print("Username already exists!")
-            un = input("Try another unsername: ")
-
-        #asking for the password and also asking to confirm it
-        pss = getpass.getpass("Enter your password(The pass might not be visible but is getting recorded): ")
-        while pc != pss:
-            if c >= 1:
-                print("Password do not match")
-            pc = getpass.getpass("Confirm your password: ")
-            print('\n')
-            c += 1
-
-        #writing the data in users.dat file
-        f = open("users.dat", 'ab')
-        pickle.dump({un:pss}, f)
-
-except:
-    if not fe:
-        #making the user to register since the file is just being created
-        f = open('users.dat', 'wb')
-        print("Welcome to registration\n")
-        un = input("Enter your user name: ")
-        p = getpass.getpass("Enter your password(The pass might not be visible but is getting recorded): ")
-        while pc != p:
-            if c >= 1:
-                print("Password do not match")
-            pc = getpass.getpass("Confirm your password: ")
-            print('\n')
-            c += 1
-            
-
-        d = {un:p}
-        pickle.dump(d, f)
-        print("Registration successful!")
-
-    #if no username exist as specified in login, this statement is executed
-    else:
-        print('Username not found')
-
-#file is closed
-f.close()
+if choice == 'login':
+    obj.login()
