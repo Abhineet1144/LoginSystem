@@ -50,7 +50,6 @@ class Main:
     def login(self):
         user_detail = self.user_data()
         user_name = input("Enter your user name: ").lower()
-        print(user_detail[user_name]["password"])
         while user_name not in user_detail:
             print("Username does not exist")
             user_name = input("Enter your user name: ").lower()
