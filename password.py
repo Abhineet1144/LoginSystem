@@ -71,19 +71,23 @@ class Main:
                 del user_detail[self.user_name]
                 f2 = open('users.json', 'w')
                 json.dump(user_detail, f2, indent=3)
-        
-obj = Main()
-choice = input("Do you want to login or register: ").lower()
 
-while choice not in ['register', 'login', 'delete']:
-    print("Invalid input\n")
-    choice = input("Do you want to login or register or delete: ")
+while True:        
+    obj = Main()
+    choice = input("Do you want to login or register or delete or exit: ").lower()
 
-if choice == 'register':
-    obj.register()
+    while choice not in ['register', 'login', 'delete']:
+        print("Invalid input\n")
+        choice = input("Do you want to login or register or delete or exit: ")
 
-if choice == 'login':
-    print(obj.login())
+    if choice == 'register':
+        obj.register()
 
-if choice == 'delete':
-    obj.delete()
+    if choice == 'login':
+        print(obj.login())
+
+    if choice == 'delete':
+        obj.delete()
+    
+    if choice == 'exit':
+        break
